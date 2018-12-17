@@ -13,9 +13,9 @@ import pickle as p
 
 class Data():
 
-	def __init__(self,directory):
+	def __init__(self, directory):
 		self.data = pd.DataFrame()
-		self.features = np.array([],dtype=np.str)
+		self.features = np.array([], dtype=np.str)
 		self.datasize=0
 		self.directory = directory
 		self.height=0
@@ -23,23 +23,30 @@ class Data():
 		self.channel=3
 
 	def load_data(self):
+
 		self.update_size()
+		self.update_features()
+		print("Finished Initialization")
+
 
 		for roots, dir, files in os.walk(self.directory):
 			temp_data = np.array([])
-			feature = roots
+			feature = os.path.basename(roots)
 			for j in files:
+
 				path = roots + "/" + j
 				path.strip()
 				try:
 					img = cv2.imread(path)
+					#print(img.size, " resizing to", self.datasize,"...")
 					img = cv2.resize(img, (self.width, self.height))
 					temp_data = np.append(temp_data, [img])
 				except:
 					print(path, " has raised a loading error.")
 					continue
-			self.data[feature] = pd.Series(temp_data)
-			print(self.data.head(2))
+				break
+			self.data[feature] = pd.Series(temp_data).values
+			#print(self.data.head(1))
 
 
 
@@ -64,15 +71,14 @@ class Data():
 
 	def update_features(self):
 		for roots, dir, files in os.walk(self.directory):
-			self.features = np.append(self.features, [roots], axis=0)
-
+			self.features = np.append(self.features, [os.path.basename(roots)], axis=0)
 
 
 
 def main():
 	d = Data("101_ObjectCategories")
-	d.load_data()
-	#print(d.data.head(5))
+	d.update_features()
+	print(d.features)
 	dataset_size = 0
 
 	#model = tf.keras.Sequential()
