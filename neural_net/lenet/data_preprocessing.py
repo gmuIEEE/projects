@@ -44,8 +44,7 @@ class Data():
 				except:
 					print(path, " has raised a loading error.")
 					continue
-				break
-			self.data[feature] = pd.Series(temp_data).values
+			self.data[feature] = pd.Series(np.array(temp_data))
 			#print(self.data.head(1))
 
 
@@ -59,7 +58,7 @@ class Data():
 				try:
 					img = cv2.imread(path)
 					#FIXME: Size is just max.
-					if temp < img.size:
+					if (temp < img.size) and (img.size<318193):
 						temp = img.size
 						self.height,self.width, self.channel = img.shape
 				except:
@@ -75,11 +74,9 @@ class Data():
 			self.features = np.append(self.features, [os.path.basename(roots)], axis=0)
 
 
-
 def main():
 	d = Data("101_ObjectCategories")
-	d.update_features()
-	print(len(d.features))
-
+	d.load_data()
+	print(d.get_data())
 
 main()
