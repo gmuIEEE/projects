@@ -58,6 +58,7 @@ class Data():
 				path.strip()
 				try:
 					img = cv2.imread(path)
+					#FIXME: Size is just max.
 					if temp < img.size:
 						temp = img.size
 						self.height,self.width, self.channel = img.shape
@@ -78,19 +79,7 @@ class Data():
 def main():
 	d = Data("101_ObjectCategories")
 	d.update_features()
-	print(d.features)
-	dataset_size = 0
-
-	#model = tf.keras.Sequential()
-
-	#input layer
-	#model.add(layers.Dense(dataset_size))
-
-	#conv layer
-	#model.add(layer.Conv2D())
-
-
-
+	print(len(d.features))
 
 
 main()
