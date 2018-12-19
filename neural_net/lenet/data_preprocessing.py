@@ -30,22 +30,21 @@ class Data():
 
 
 		for roots, dir, files in os.walk(self.directory):
-			temp_data = np.array([])
+			temp_data = []
 			feature = os.path.basename(roots)
 			for j in files:
-
 				path = roots + "/" + j
 				path.strip()
 				try:
 					img = cv2.imread(path)
 					#print(img.size, " resizing to", self.datasize,"...")
 					img = cv2.resize(img, (self.width, self.height))
-					temp_data = np.append(temp_data, [img])
+					temp_data.append(img)
 				except:
 					print(path, " has raised a loading error.")
 					continue
 			self.data[feature] = pd.Series(np.array(temp_data))
-			#print(self.data.head(1))
+
 
 
 
