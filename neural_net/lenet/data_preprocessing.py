@@ -8,14 +8,15 @@ import pandas as pd
 import numpy as np
 import os
 import cv2
+import tensorflow as tf
 from sklearn.preprocessing import OneHotEncoder
 import pickle as p
 
 class Data():
 
 	def __init__(self, directory):
-		self.data = pd.DataFrame()
-		self.features = np.array([], dtype=np.str)
+		self.data = {}
+		self.labels = np.array([], dtype=np.str)
 		self.datasize=0
 		self.directory = directory
 		self.height=0
@@ -25,27 +26,33 @@ class Data():
 	def load_data(self):
 
 		self.update_size()
-		self.update_features()
+		self.update_labels()
 		print("Finished Initialization")
-
-
+		paths = []
+		labels = []
 		for roots, dir, files in os.walk(self.directory):
-			temp_data = []
-			feature = os.path.basename(roots)
+			label = os.path.basename(roots)
+
 			for j in files:
 				path = roots + "/" + j
 				path.strip()
 				try:
-					img = cv2.imread(path)
-					#print(img.size, " resizing to", self.datasize,"...")
-					img = cv2.resize(img, (self.width, self.height))
-					temp_data.append(img)
+					labels.append(label)
+					paths.append(path)
 				except:
 					print(path, " has raised a loading error.")
 					continue
-			self.data[feature] = pd.Series(np.array(temp_data))
+		filenames = tf.constant(paths)
+		labels = tf.constant(labels)
+		dataset = tf.data.Dataset.from_tensor_slices((filenames, labels))
+		dataset = dataset.map(self._parse_function)
+		self.data = dataset
 
-
+	def _parse_function(self, filename, label):
+		image_string = tf.read_file(filename)
+		image_decoded = tf.image.decode_jpeg(image_string)
+		image_resized = tf.image.resize_images(image_decoded, [self.width, self.height])
+		return image_resized, label
 
 
 	def update_size(self):
@@ -57,7 +64,7 @@ class Data():
 				try:
 					img = cv2.imread(path)
 					#FIXME: Size is just max.
-					if (temp < img.size) and (img.size<318193):
+					if (temp < img.size):
 						temp = img.size
 						self.height,self.width, self.channel = img.shape
 				except:
@@ -68,9 +75,9 @@ class Data():
 	def get_data(self):
 		return self.data
 
-	def update_features(self):
+	def update_labels(self):
 		for roots, dir, files in os.walk(self.directory):
-			self.features = np.append(self.features, [os.path.basename(roots)], axis=0)
+			self.labels = np.append(self.labels, [os.path.basename(roots)], axis=0)
 
 
 def main():
